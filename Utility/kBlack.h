@@ -7,10 +7,14 @@
 //	includes
 #include "kSpecialFunction.h"
 #include "kInlines.h"
+#include "kVector.h"
 #include <cmath>
 #include <algorithm>
+#include <string>
 
 using std::max;
+using std::string;
+
 
 class kBlack
 {
@@ -38,6 +42,30 @@ public:
 		double	strike,
 		double	price,
 		double	forward);
+
+	//	fd runner
+	static bool	fdRunner(
+		const double		s0,
+		const double		r,
+		const double		mu,
+		const double		sigma,
+		const double		expiry,
+		const double		strike,
+		const bool			dig,
+		const int			pc,			//	put (-1) call (1)
+		const int			ea,			//	european (0), american (1)
+		const int			smooth,		//	smoothing
+		const double		theta,
+		const int			wind,
+		const double		numStd,
+		const int			numt,
+		const int			numx,
+		const bool			update,
+		const int			numPr,
+		double& res0,
+		kVector<double>& s,
+		kVector<double>& res,
+		string& error);
 };
 
 template <class V>
@@ -49,12 +77,12 @@ kBlack::call(
 	V	volatility)
 {
 	// expiry ok?
-	if(expiry<=0) return max(forward-strike,0.0);
+	if (expiry <= 0) return max(forward - strike, 0.0);
 
-	V std	 = volatility*sqrt(expiry);
-	V xPlus	 = log(forward/strike)/std + 0.5*std;
+	V std = volatility * sqrt(expiry);
+	V xPlus = log(forward / strike) / std + 0.5 * std;
 	V xMinus = xPlus - std;
-	V res	 = forward*kSpecialFunction::normalCdf(xPlus) - strike*kSpecialFunction::normalCdf(xMinus);
+	V res = forward * kSpecialFunction::normalCdf(xPlus) - strike * kSpecialFunction::normalCdf(xMinus);
 
 	// return
 	return res;
@@ -69,12 +97,12 @@ kBlack::vega(
 	V	volatility)
 {
 	// expiry ok?
-	if(expiry<=0) return 0.0;
+	if (expiry <= 0) return 0.0;
 
 	V sqrtT = sqrt(expiry);
-	V std	= volatility*sqrtT;
-	V xPlus	= log(forward/strike)/std + 0.5*std;
-	V res	= forward*kSpecialFunction::normalPdf(xPlus)*sqrtT;
+	V std = volatility * sqrtT;
+	V xPlus = log(forward / strike) / std + 0.5 * std;
+	V res = forward * kSpecialFunction::normalPdf(xPlus) * sqrtT;
 
 	// return
 	return res;
