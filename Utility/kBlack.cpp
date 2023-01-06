@@ -139,7 +139,7 @@ kBlack::fdRunner(
 		if (smooth == 0 || i == 0 || i == nums - 1)
 		{
 			if (dig) res(i) = 0.5 * (kInlines::sign(s(i) - strike) + 1.0);
-			else    res(i) = max(0.0, s(i) - strike);
+			else    res(i) = max(0.00, s(i) - strike);
 		}
 		else
 		{
@@ -168,8 +168,8 @@ kBlack::fdRunner(
 		for (i = 0; i < nums; ++i)
 		{
 			fd.r()(i) = r;
-			fd.mu()(i) = mu;
-			fd.var()(i) = sigma * sigma;
+			fd.mu()(i) = mu * s(i);
+			fd.var()(i) = sigma * sigma * s(i) * s(i); //Tilføjer man s(i) bliver ingen res negative (dem der før var negative bliver meget små)
 		}
 
 		//	roll
