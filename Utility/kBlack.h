@@ -8,6 +8,7 @@
 #include "kSpecialFunction.h"
 #include "kInlines.h"
 #include "kVector.h"
+#include "kMatrix.h"
 #include <cmath>
 #include <algorithm>
 #include <string>
@@ -61,9 +62,11 @@ public:
 		const int			numx,
 		const bool			update,
 		const int			numPr,
+		const bool			eec,		// early exercise curve
 		double& res0,
 		kVector<double>& s,
 		kVector<double>& res,
+		kMatrix<double>& eecm,
 		string& error);
 };
 
