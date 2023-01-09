@@ -1,1 +1,5 @@
-﻿  Utility.vcxproj -> C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\Utility.lib
+﻿  kBachelier.cpp
+  kBlack.cpp
+C:\Users\Bruger\source\repos\SaxoPUKCompFin\Utility\kBlack.cpp(215,1): error C2084: function 'bool kBlack::fdRunner(const double,const double,const double,const double,const double,const double,const bool,const int,const int,const int,const double,const int,const double,const int,const int,const bool,const int,double &,kVector<double> &,kVector<double> &,std::string &)' already has a body
+C:\Users\Bruger\source\repos\SaxoPUKCompFin\Utility\kBlack.cpp(85): message : see previous definition of 'fdRunner'
+  Generating Code...

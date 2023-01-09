@@ -1,1 +1,4 @@
-﻿  CompFin_64.vcxproj -> C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll
+﻿  xlExport.cpp
+  LINK : C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll not found or not built by the last incremental link; performing full link
+     Creating library C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.lib and object C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.exp
+  CompFin_64.vcxproj -> C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll
