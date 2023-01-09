@@ -98,9 +98,11 @@ kBlack::fdRunner(
 	const int			numS,
 	const bool			update,
 	const int			numPr,
+	const bool			eec,		// early exercise curve
 	double& res0,
 	kVector<double>& s,
 	kVector<double>& res,
+	kMatrix<double>& eecm,
 	string& error)
 {
 	//	helps
@@ -113,10 +115,14 @@ kBlack::fdRunner(
 	int    nums = 2 * (max(0,numS) / 2 + 1);
 	double dx = 2 * numStd * std / nums;
 
+	//	early exercise curve matrix
+	
+	eecm.resize(nums, numT);
+
 	s.resize(nums);
 	for (i = 0; i < nums; ++i)
 	{
-		s(i) = s0 * exp((i - nums / 2) * dx);
+		s(i) = s0 * exp((i - nums / 2.0) * dx);
 	}
 
 	//	construct fd grid
@@ -171,15 +177,29 @@ kBlack::fdRunner(
 			fd.rollBwd(dt, update || h == (numt - 1), theta, wind, fd.res());
 			if (ea > 0)
 			{
-				for (i = 0; i < nums; ++i) fd.res()(0)(i) = max(res(i), fd.res()(0)(i));
+				for (i = 0; i < nums; ++i) {
+					fd.res()(0)(i) = max(res(i), fd.res()(0)(i));
+					if (eec == 1) /*eecm(i, h) = fd.res()(0)(i) > res(i);*/{
+						if (fd.res()(0)(i) > res(i)) {
+							eecm(nums - 1 - i, h) = 1;
+						}
+						else {
+							eecm(nums - 1 - i, h) = 0;
+						}
+					}
+				}
 			}
 		}
 	}
 
 	//	set result
-	res = fd.res()(0);
-	res0 = fd.res()(0)(nums / 2);
-
+	if (eec == 0) {
+		res = fd.res()(0);
+		res0 = fd.res()(0)(nums / 2);
+	}
+		
+	
+		
 	//	done
 	return true;
 }
