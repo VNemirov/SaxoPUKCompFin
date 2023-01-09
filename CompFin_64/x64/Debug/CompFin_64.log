@@ -1,8 +1,1 @@
-﻿  framework.c
-  MemoryManager.cpp
-  MemoryPool.cpp
-  XLCALL.CPP
-  xlExport.cpp
-  Generating Code...
-     Creating library C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.lib and object C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.exp
-  CompFin_64.vcxproj -> C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll
+﻿  CompFin_64.vcxproj -> C:\Users\Bruger\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll

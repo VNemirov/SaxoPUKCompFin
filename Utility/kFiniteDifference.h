@@ -133,7 +133,7 @@ public:
 		//	done
 		return res;
 	}
-
+	
 	//	smooth digital payoff function
 	template <class V>
 	static V	smoothDigital(

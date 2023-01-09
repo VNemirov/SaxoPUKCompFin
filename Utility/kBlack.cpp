@@ -113,13 +113,7 @@ kBlack::fdRunner(
 	double std = sigma * sqrt(t);
 
 	int    nums = 2 * (max(0, numS) / 2 + 1);
-	//double sl = s0 * exp(-nums * std);
-	//double su = s0 * exp(nums * std);
 
-	//if (numS <= 1 || sl == su)
-	//{
-	//	nums = 1;
-	//}
 	double dx = 2 * numStd * std / nums;
 	s.resize(nums);
 	for (i = 0; i < nums; ++i)
@@ -169,7 +163,7 @@ kBlack::fdRunner(
 		{
 			fd.r()(i) = r;
 			fd.mu()(i) = mu * s(i);
-			fd.var()(i) = sigma * sigma * s(i) * s(i); //Tilføjer man s(i) bliver ingen res negative (dem der før var negative bliver meget små)
+			fd.var()(i) = sigma * sigma * s(i) * s(i);
 		}
 
 		//	roll
