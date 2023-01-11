@@ -68,6 +68,34 @@ public:
 		kVector<double>& res,
 		kMatrix<double>& eecm,
 		string& error);
+
+	static bool fdFwdRunner(
+		const double		s0,
+		const double		r,
+		const double		mu,
+		const double		sigma,
+
+		const double		expiry,
+		const double		strike,
+		const bool			dig,
+		const int			pc,			//	put (-1) call (1)
+		const int			smooth,		//	smoothing
+
+		const double		theta,
+		const int			wind,
+		const double		numStd,
+		const int			numT,
+		const int			numS,
+		const int			numK,
+		const bool			update,
+		const int			numPr,
+		const int			pSetting,
+		double& res0,
+		kVector<double>& s,
+		kVector<double>& k,
+		kMatrix<double>& pMatrix,
+		kMatrix<double>& res,
+		string& error);
 };
 
 template <class V>
