@@ -465,15 +465,17 @@ xBlackFd(
 	double strike = 0.0;
 	int    dig = 0;
 	int    pc = 1;
-	int	   ea = 0;
+	int	   ead = 0;
 	int	   smooth = 0;
+	double Barrier = 0.8;
 	numRows = (int)getRows(contract);
 	if (numRows > 0 && !kXlUtils::getDbl(contract, 0, 0, expiry, &err))	return kXlUtils::setError(err);
 	if (numRows > 1 && !kXlUtils::getDbl(contract, 1, 0, strike, &err))	return kXlUtils::setError(err);
-	if (numRows > 2 && !kXlUtils::getInt(contract, 2, 0, dig, &err))		return kXlUtils::setError(err);
+	if (numRows > 2 && !kXlUtils::getInt(contract, 2, 0, dig, &err))	return kXlUtils::setError(err);
 	if (numRows > 3 && !kXlUtils::getInt(contract, 3, 0, pc, &err))		return kXlUtils::setError(err);
-	if (numRows > 4 && !kXlUtils::getInt(contract, 4, 0, ea, &err))		return kXlUtils::setError(err);
+	if (numRows > 4 && !kXlUtils::getInt(contract, 4, 0, ead, &err))		return kXlUtils::setError(err);
 	if (numRows > 5 && !kXlUtils::getInt(contract, 5, 0, smooth, &err))	return kXlUtils::setError(err);
+	if (numRows > 6 && !kXlUtils::getDbl(contract, 6, 0, Barrier, &err))	return kXlUtils::setError(err);
 
 	//	get grid tech
 	double theta = 0.5;
@@ -495,7 +497,7 @@ xBlackFd(
 	//	run
 	double res0;
 	kVector<double> s, res;
-	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ea, smooth, theta, wind, numStd, numT, numX, update > 0, numPr, res0, s, res, err)) return kXlUtils::setError(err);
+	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ead, smooth, Barrier, theta, wind, numStd, numT, numX, update > 0, numPr, res0, s, res, err)) return kXlUtils::setError(err);
 
 	//	size output
 	numRows = 3 + s.size();

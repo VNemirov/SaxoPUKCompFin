@@ -91,8 +91,9 @@ kBlack::fdRunner(
 	const double		strike,
 	const bool			dig,
 	const int			pc,			//	put (-1) call (1)
-	const int			ea,			//	european (0), american (1)
+	const int			ead,		//	european (0), american (1), Down and out (2), Improvement of DaO (3)
 	const int			smooth,		//	smoothing
+	const double		Barrier,	//  price of dao
 	const double		theta,
 	const int			wind,
 	const double		numStd,
@@ -106,7 +107,7 @@ kBlack::fdRunner(
 	string& error)
 {
 	//	helps
-	int h, i, p;
+	int h, i, p, barrier_index;
 
 	//	construct s axis
 	double t = max(0.0, expiry);
@@ -121,6 +122,26 @@ kBlack::fdRunner(
 		s(i) = s0 * exp((i - nums / 2) * dx);
 	}
 
+	if (ead == 3)
+	{
+		for (i = 0; i < nums; ++i) {
+			if (s(i) > Barrier) {
+				if (abs(s(i) - Barrier) < abs(s(i - 1) - Barrier)) {
+					barrier_index = i;
+					s(barrier_index) = Barrier;
+					break;
+				}
+				if (abs(s(i) - Barrier) > abs(s(i - 1) - Barrier)) {
+					barrier_index = i - 1;
+					s(barrier_index) = Barrier;
+					break;
+				}
+			}
+		}
+	}
+
+
+
 	//	construct fd grid
 	kFd1d<double> fd;
 	fd.init(1, s, false);
@@ -133,7 +154,7 @@ kBlack::fdRunner(
 		if (smooth == 0 || i == 0 || i == nums - 1)
 		{
 			if (dig) res(i) = 0.5 * (kInlines::sign(s(i) - strike) + 1.0);
-			else    res(i) = max(0.00, s(i) - strike);
+			else    res(i) = max(0.000, s(i) - strike);
 		}
 		else
 		{
@@ -142,13 +163,15 @@ kBlack::fdRunner(
 			if (dig) res(i) = kFiniteDifference::smoothDigital(xl, xu, strike);
 			else	 res(i) = kFiniteDifference::smoothCall(xl, xu, strike);
 		}
-
 		if (pc < 0)
 		{
 			if (dig) res(i) = 1.0 - res(i);
 			else    res(i) -= (s(i) - strike);
 		}
 	}
+
+
+
 
 	//	time steps
 	int    numt = max(0, numT);
@@ -159,6 +182,7 @@ kBlack::fdRunner(
 	for (p = 0; p < nump; ++p)
 	{
 		//	set parameters
+
 		for (i = 0; i < nums; ++i)
 		{
 			fd.r()(i) = r;
@@ -166,14 +190,25 @@ kBlack::fdRunner(
 			fd.var()(i) = sigma * sigma * s(i) * s(i);
 		}
 
+		if (ead == 3) {
+			fd.mu()(barrier_index) = 0.0;
+			fd.var()(barrier_index) = 0.0;
+		}
+
 		//	roll
 		fd.res()(0) = res;
 		for (h = numt - 1; h >= 0; --h)
 		{
 			fd.rollBwd(dt, update || h == (numt - 1), theta, wind, fd.res());
-			if (ea > 0)
+			if (ead == 1)
 			{
 				for (i = 0; i < nums; ++i) fd.res()(0)(i) = max(res(i), fd.res()(0)(i));
+			}
+			if (ead == 2 || ead == 3)
+			{
+				for (i = 0; i < nums; i++) {
+					if (s(i) <= Barrier) res(i) = 0.0;
+				}
 			}
 		}
 	}

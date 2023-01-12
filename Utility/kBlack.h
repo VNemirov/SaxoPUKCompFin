@@ -53,8 +53,9 @@ public:
 		const double		strike,
 		const bool			dig,
 		const int			pc,			//	put (-1) call (1)
-		const int			ea,			//	european (0), american (1)
+		const int			ead,		//	european (0), american (1), Down and out (2)
 		const int			smooth,		//	smoothing
+		const double		Barrier,	//  price of dao
 		const double		theta,
 		const int			wind,
 		const double		numStd,
