@@ -315,20 +315,7 @@ kBlack::fdFwdRunner(
 		}
 	}
 
-
-
-
-
-	//for (i = 0; i < nums; i++) {
-	//	res(i) = 0;
-	//	for (j = i; j < nums; j++) {
-	//		res(i) += fd.res()(0)(j) * max(s(j) - strike,0.0);
-	//		//res(i) += (s(j)-s(i));
-	//	}
-	//}
-	//res = fd.res()(0);
-
-	res0 = res(numK/2 , (numt -1));
+	res0 = res(numK/2, numt-1);
 
 
 

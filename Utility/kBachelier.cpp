@@ -170,7 +170,7 @@ kBachelier::fdRunner(
 		{
 			fd.r()(i)   = r;
 			fd.mu()(i)  = mu;
-			fd.var()(i) = sigma * sigma;
+			fd.var()(i) = sigma * sigma * s(i);
 		}
 
 		//	roll
