@@ -648,7 +648,7 @@ xBlackFd(
 
 			double dt = max(0.0, expiry) / max(1, numT);
 
-			for (i = 0; i < numS; i++)
+			for (i = 0; i < 2 * (max(0, numS) / 2 + 1); i++)
 			{
 				kXlUtils::setDbl(i + 3, 0, s(i), out);
 				for (int j = 0; j < numT; j++) {
