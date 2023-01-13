@@ -93,7 +93,7 @@ kBlack::fdRunner(
 	const int			pc,			//	put (-1) call (1)
 	const int			ead,		//	european (0), american (1), Down and out (2), Improvement of DaO (3)
 	const int			smooth,		//	smoothing
-	const double		Barrier,	//  price of dao
+	const double		Barrier,	//  Barrier price of dao
 	const double		theta,
 	const int			wind,
 	const double		numStd,
