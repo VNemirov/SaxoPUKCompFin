@@ -7,10 +7,14 @@
 //	includes
 #include "kSpecialFunction.h"
 #include "kInlines.h"
+#include "kVector.h"
+#include "kMatrix.h"
 #include <cmath>
 #include <algorithm>
+#include <string>
 
 using std::max;
+using std::string;
 
 class kBlack
 {
@@ -38,6 +42,60 @@ public:
 		double	strike,
 		double	price,
 		double	forward);
+
+	//	fd runner
+	static bool	fdRunner(
+		const double		s0,
+		const double		r,
+		const double		mu,
+		const double		sigma,
+		const double		expiry,
+		const double		strike,
+		const bool			dig,
+		const int			pc,			//	put (-1) call (1)
+		const int			ea,			//	european (0), american (1)
+		const int			smooth,		//	smoothing
+		const double		theta,
+		const int			wind,
+		const double		numStd,
+		const int			numt,
+		const int			numx,
+		const bool			update,
+		const int			numPr,
+		const bool			eec,		// early exercise curve
+		double& res0,
+		kVector<double>& s,
+		kVector<double>& res,
+		kMatrix<double>& eecm,
+		string& error);
+
+	static bool fdFwdRunner(
+		const double		s0,
+		const double		r,
+		const double		mu,
+		const double		sigma,
+
+		const double		expiry,
+		const double		strike,
+		const bool			dig,
+		const int			pc,			//	put (-1) call (1)
+		const int			smooth,		//	smoothing
+
+		const double		theta,
+		const int			wind,
+		const double		numStd,
+		const int			numT,
+		const int			numS,
+		const int			numK,
+		const bool			update,
+		const int			numPr,
+		const int			pSetting,
+		double& res0,
+		kVector<double>& s,
+		kVector<double>& k,
+		kMatrix<double>& pMatrix,
+		kMatrix<double>& res,
+		string& error);
 };
 
 template <class V>
