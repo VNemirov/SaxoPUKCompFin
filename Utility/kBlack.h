@@ -69,7 +69,7 @@ public:
 		double& res0,
 		kVector<double>& s,
 		kVector<double>& res,
-		kMatrix<double>& eecm,
+		kVector<double>& eecv,
 		string& error);
 
 	static bool fdFwdRunner(
@@ -89,13 +89,12 @@ public:
 		const double		numStd,
 		const int			numT,
 		const int			numS,
-		const int			numK,
 		const bool			update,
 		const int			numPr,
 		const int			pSetting,
+
 		double& res0,
 		kVector<double>& s,
-		kVector<double>& k,
 		kMatrix<double>& pMatrix,
 		kMatrix<double>& res,
 		string& error);

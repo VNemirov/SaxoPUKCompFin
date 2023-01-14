@@ -497,17 +497,16 @@ xBlackFd(
 
 	//	run
 	double res0;
-	kVector<double> s, res;
-	kMatrix<double> eecm;
+	kVector<double> s, res, eecv;
 
 	//	fitting matrix to data
-	eecm.resize(numX + 2, numT);
+	eecv.resize(numT);
 
-	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ead, smooth, barrier, theta, wind, numStd, numT, numX, update > 0, numPr, eec, res0, s, res, eecm, err)) return kXlUtils::setError(err);
+	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ead, smooth, barrier, theta, wind, numStd, numT, numX, update > 0, numPr, eec, res0, s, res, eecv, err)) return kXlUtils::setError(err);
 	//	size output
 	if (ead == 1 && eec == 1) {
-		numRows = eecm.rows();
-		numCols = eecm.cols();
+		numRows = 3 + eecv.size();
+		numCols = 2;
 	}
 	else {
 		numRows = 3 + s.size();
@@ -518,9 +517,14 @@ xBlackFd(
 
 	//	fill output
 	if (ead == 1 && eec == 1) {
-		for (k = 0; k < numCols; k++) {
-			for (i=0; i < numRows; i++)
-			kXlUtils::setDbl(i, k, eecm(i, k), out);
+		double dt = max(0.0, expiry) / max(1, numT);
+		//kXlUtils::setStr(0, 0, "res 0", out);
+		kXlUtils::setDbl(0, 1, res0, out);
+		kXlUtils::setStr(2, 0, "t", out);
+		kXlUtils::setStr(2, 1, "ee", out);
+		for (i = 0; i < numT; i++) {
+			kXlUtils::setDbl(i, 0, expiry-i*dt, out);
+			kXlUtils::setDbl(i, 1, eecv(i), out);
 		}
 	}
 	else {
@@ -583,7 +587,6 @@ xBlackFd(
 		double numStd = 5.0;
 		int    numT = 25;
 		int    numS = 50;
-		int	   numK = 10;
 		int    update = 1;
 		int    numPr = 1;
 		int	   pSetting = 0;
@@ -593,23 +596,22 @@ xBlackFd(
 		if (numRows > 2 && !kXlUtils::getDbl(gridTech, 2, 0, numStd, &err)) return kXlUtils::setError(err);
 		if (numRows > 3 && !kXlUtils::getInt(gridTech, 3, 0, numT, &err))	return kXlUtils::setError(err);
 		if (numRows > 4 && !kXlUtils::getInt(gridTech, 4, 0, numS, &err))	return kXlUtils::setError(err);
-		if (numRows > 5 && !kXlUtils::getInt(gridTech, 5, 0, numK, &err))	return kXlUtils::setError(err);
-		if (numRows > 6 && !kXlUtils::getInt(gridTech, 6, 0, update, &err)) return kXlUtils::setError(err);
-		if (numRows > 7 && !kXlUtils::getInt(gridTech, 7, 0, numPr, &err))	return kXlUtils::setError(err);
-		if (numRows > 8 && !kXlUtils::getInt(gridTech, 8, 0, pSetting, &err))	return kXlUtils::setError(err);
+		if (numRows > 5 && !kXlUtils::getInt(gridTech, 5, 0, update, &err)) return kXlUtils::setError(err);
+		if (numRows > 6 && !kXlUtils::getInt(gridTech, 6, 0, numPr, &err))	return kXlUtils::setError(err);
+		if (numRows > 7 && !kXlUtils::getInt(gridTech, 7, 0, pSetting, &err))	return kXlUtils::setError(err);
 
 		//	run
 		double res0;
-		kVector<double> s, k;
+		kVector<double> s;
 		kMatrix<double> pMatrix, res;
 
-		if (!kBlack::fdFwdRunner(s0, r, mu, sigma, expiry, strike, dig, pc, smooth, theta, wind, numStd, numT, numS, numK, update > 0, numPr, pSetting, res0, s, k, pMatrix, res, err)) return kXlUtils::setError(err);
+		if (!kBlack::fdFwdRunner(s0, r, mu, sigma, expiry, strike, dig, pc, smooth, theta, wind, numStd, numT, numS, update > 0, numPr, pSetting, res0, s, pMatrix, res, err)) return kXlUtils::setError(err);
 		
 		LPXLOPER12 out;
 
 		if (pSetting == 0) {
 			//	size output
-			numRows = 3 + numK;
+			numRows = 3 + numS;
 			numCols = numT + 1;
 
 			out = kXlUtils::getOper(numRows, numCols);
@@ -623,9 +625,9 @@ xBlackFd(
 
 			double dt = max(0.0, expiry) / max(1, numT);
 
-			for (i = 0; i < numK; i++)
+			for (i = 0; i < numS; i++)
 			{
-				kXlUtils::setDbl(i + 3, 0, k(i), out);
+				kXlUtils::setDbl(i + 3, 0, s(i), out);
 				for (int j = 0; j < numT; j++) {
 					if (int(j * dt) == j * dt) {
 						kXlUtils::setDbl(2, j + 1, j * dt, out);
