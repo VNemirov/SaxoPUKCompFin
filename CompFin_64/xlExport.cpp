@@ -464,15 +464,17 @@ xBlackFd(
 	double strike = 0.0;
 	int    dig = 0;
 	int    pc = 1;
-	int	   ea = 0;
+	int	   ead = 0;
 	int	   smooth = 0;
+	double barrier = 0.0;
 	numRows = (int)getRows(contract);
 	if (numRows > 0 && !kXlUtils::getDbl(contract, 0, 0, expiry, &err))	return kXlUtils::setError(err);
 	if (numRows > 1 && !kXlUtils::getDbl(contract, 1, 0, strike, &err))	return kXlUtils::setError(err);
 	if (numRows > 2 && !kXlUtils::getInt(contract, 2, 0, dig, &err))		return kXlUtils::setError(err);
 	if (numRows > 3 && !kXlUtils::getInt(contract, 3, 0, pc, &err))		return kXlUtils::setError(err);
-	if (numRows > 4 && !kXlUtils::getInt(contract, 4, 0, ea, &err))		return kXlUtils::setError(err);
+	if (numRows > 4 && !kXlUtils::getInt(contract, 4, 0, ead, &err))		return kXlUtils::setError(err);
 	if (numRows > 5 && !kXlUtils::getInt(contract, 5, 0, smooth, &err))	return kXlUtils::setError(err);
+	if (numRows > 6 && !kXlUtils::getDbl(contract, 6, 0, barrier, &err))	return kXlUtils::setError(err);
 
 	//	get grid tech
 	double theta = 0.5;
@@ -501,9 +503,9 @@ xBlackFd(
 	//	fitting matrix to data
 	eecm.resize(numX + 2, numT);
 
-	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ea, smooth, theta, wind, numStd, numT, numX, update > 0, numPr, eec, res0, s, res, eecm, err)) return kXlUtils::setError(err);
+	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ead, smooth, barrier, theta, wind, numStd, numT, numX, update > 0, numPr, eec, res0, s, res, eecm, err)) return kXlUtils::setError(err);
 	//	size output
-	if (ea == 1 && eec == 1) {
+	if (ead == 1 && eec == 1) {
 		numRows = eecm.rows();
 		numCols = eecm.cols();
 	}
@@ -515,7 +517,7 @@ xBlackFd(
 	LPXLOPER12 out = kXlUtils::getOper(numRows, numCols);
 
 	//	fill output
-	if (ea == 1 && eec == 1) {
+	if (ead == 1 && eec == 1) {
 		for (k = 0; k < numCols; k++) {
 			for (i=0; i < numRows; i++)
 			kXlUtils::setDbl(i, k, eecm(i, k), out);

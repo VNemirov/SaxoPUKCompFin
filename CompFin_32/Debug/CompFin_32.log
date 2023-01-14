@@ -1,0 +1,7 @@
+﻿  MemoryManager.cpp
+  MemoryPool.cpp
+  xlcall.cpp
+  xlExport.cpp
+  Generating Code...
+     Creating library C:\Users\Shark\source\repos\VNemirov\SaxoPUKCompFin\Debug\CompFin_32.lib and object C:\Users\Shark\source\repos\VNemirov\SaxoPUKCompFin\Debug\CompFin_32.exp
+  CompFin_32.vcxproj -> C:\Users\Shark\source\repos\VNemirov\SaxoPUKCompFin\Debug\CompFin_32.xll

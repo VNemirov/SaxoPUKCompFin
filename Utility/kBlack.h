@@ -49,12 +49,15 @@ public:
 		const double		r,
 		const double		mu,
 		const double		sigma,
+
 		const double		expiry,
 		const double		strike,
 		const bool			dig,
 		const int			pc,			//	put (-1) call (1)
-		const int			ea,			//	european (0), american (1)
+		const int			ead,			//	european (0), american (1)
 		const int			smooth,		//	smoothing
+		const double		barrier,
+
 		const double		theta,
 		const int			wind,
 		const double		numStd,

@@ -88,12 +88,15 @@ kBlack::fdRunner(
 	const double		r,
 	const double		mu,
 	const double		sigma,
+
 	const double		expiry,
 	const double		strike,
 	const bool			dig,
 	const int			pc,			//	put (-1) call (1)
-	const int			ea,			//	european (0), american (1)
+	const int			ead,			//	european (0), american (1)
 	const int			smooth,		//	smoothing
+	const double		barrier,	//	barrier
+
 	const double		theta,
 	const int			wind,
 	const double		numStd,
@@ -109,7 +112,7 @@ kBlack::fdRunner(
 	string& error)
 {
 	//	helps
-	int h, i, p;
+	int h, i, p, bi;
 
 	//	construct s axis
 	double t = max(0.0, expiry);
@@ -126,6 +129,32 @@ kBlack::fdRunner(
 	for (i = 0; i < nums; ++i)
 	{
 		s(i) = s0 * exp((i - nums / 2.0) * dx);
+	}
+
+	//	adder barrier to grid if option is down-and-out
+	if (ead == 3)
+	{
+		for (i = 0; i < nums; i++) {
+			if (s(i) > barrier && i > 0) {
+				// determening wether s(i) or s(i-1) is closer to barrier
+				if (abs(s(i) - barrier) < abs(s(i - 1) - barrier)) {
+					bi = i;
+					s(bi) = barrier;
+					break;
+				}
+				else
+				{
+					bi = i-1;
+					s(bi) = barrier;
+					break;
+				}
+			}
+			else if (s(i) > barrier && i == 0) {
+				bi = i;
+				s(bi) = barrier;
+				break;
+			}
+		}
 	}
 
 	//	construct fd grid
@@ -173,12 +202,17 @@ kBlack::fdRunner(
 			fd.var()(i) = sigma * sigma * s(i) * s(i);
 		}
 
+		if (ead == 3) { //improved barrier
+			fd.mu()(bi) = 0.0;
+			fd.var()(bi) = 0.0;
+		}
+
 		//	roll
 		fd.res()(0) = res;
 		for (h = numt - 1; h >= 0; --h)
 		{
 			fd.rollBwd(dt, update || h == (numt - 1), theta, wind, fd.res());
-			if (ea > 0)
+			if (ead == 1)
 			{
 				for (i = 0; i < nums; ++i) {
 					fd.res()(0)(i) = max(res(i), fd.res()(0)(i));
@@ -186,11 +220,17 @@ kBlack::fdRunner(
 					if (eec == 1) eecm(nums - 1 - i, h) = (fd.res()(0)(i) > res(i) ? 0 : 1);	
 				}
 			}
+			else if (ead >= 2) 
+			{
+				for (i = 0; i < nums; i++) {
+					if (s(i) <= barrier) fd.res()(0)(i) = 0.0;
+				}
+			}
 		}
 	}
 
 	//	set result
-	if (eec == 0 || ea == 0) {
+	if (eec == 0 || ead != 1) {
 		res = fd.res()(0);
 		res0 = fd.res()(0)(nums / 2);
 	}
