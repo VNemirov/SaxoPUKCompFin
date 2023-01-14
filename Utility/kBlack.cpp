@@ -207,7 +207,7 @@ kBlack::fdRunner(
 			if (ead == 2 || ead == 3)
 			{
 				for (i = 0; i < nums; i++) {
-					if (s(i) <= Barrier) res(i) = 0.0;
+					if (s(i) <= Barrier) fd.res()(0)(i) = 0.0;
 				}
 			}
 		}
