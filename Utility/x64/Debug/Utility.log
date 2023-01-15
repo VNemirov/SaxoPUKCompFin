@@ -1,1 +1,3 @@
-﻿  Utility.vcxproj -> C:\Users\Shark\source\repos\VNemirov\SaxoPUKCompFin\x64\Debug\Utility.lib
+﻿  kBlack.cpp
+C:\Users\Shark\Source\Repos\VNemirov\SaxoPUKCompFin\Utility\kBlack.cpp(277,12): warning C4101: 'j': unreferenced local variable
+  Utility.vcxproj -> C:\Users\Shark\source\repos\VNemirov\SaxoPUKCompFin\x64\Debug\Utility.lib

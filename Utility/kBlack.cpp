@@ -93,7 +93,7 @@ kBlack::fdRunner(
 	const double		strike,
 	const bool			dig,
 	const int			pc,			//	put (-1) call (1)
-	const int			ead,			//	european (0), american (1)
+	const int			ead,		//	european (0), american (1)
 	const int			smooth,		//	smoothing
 	const double		barrier,	//	barrier
 
@@ -334,11 +334,10 @@ kBlack::fdFwdRunner(
 	}
 
 	//	set result
-	res.resize(numS, numT);
-
+	res.resize(nums, numT);
 
 	for (int t = 0; t < numt; t++) {
-		for (i = 0; i < numS; i++) {
+		for (i = 0; i < nums; i++) {
 			res(i,t) = 0.0;
 			for (int c = 0; c < nums; c++) {
 				res(i,t) += pMatrix(c,t) * max(s(c) - s(i), 0.0);
@@ -346,9 +345,7 @@ kBlack::fdFwdRunner(
 		}
 	}
 
-	res0 = res(numS/2, numt-1);
-
-
+	res0 = res(nums/2, numt-1);
 
 	//	done
 	return true;
