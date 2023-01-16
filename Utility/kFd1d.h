@@ -63,6 +63,14 @@ public:
 		int						wind,
 		kVector<kVector<V>>&	res);
 
+	//	roll fwd once (Dupire)
+	void	rollFwdDupire(
+		V						dt,
+		bool					update,
+		V						theta,
+		int						wind,
+		kVector<kVector<V>>& res);
+
 private:
 
 	//	r, mu, var
@@ -255,6 +263,49 @@ kFd1d<V>::rollFwd(
 		{
 			myVs = res[k];
 			kMatrixAlgebra::banmul(myAe,mm,mm,myVs,res[k]);
+		}
+	}
+
+	//	done
+	return;
+}
+
+template <class V>
+void
+kFd1d<V>::rollFwdDupire(
+	V						dt,
+	bool					update,
+	V						theta,
+	int						wind,
+	kVector<kVector<V>>& res)
+{
+	//	helps
+	int k;
+
+	//	dims
+	int n = myX.size();
+	int mm = myDx.cols() / 2;
+	int numV = (int)res.size();
+
+	//	implicit
+	if (theta != 0.0)
+	{
+		if (update) calcAx(1.0, -dt * theta, wind, false, myAi);
+		for (k = 0; k < numV; ++k)
+		{
+			myVs = res[k];
+			kMatrixAlgebra::tridag(myAi, myVs, res[k], myWs);
+		}
+	}
+
+	//	explicit
+	if (theta != 1.0)
+	{
+		if (update) calcAx(1.0, dt * (1.0 - theta), wind, false, myAe);
+		for (k = 0; k < numV; ++k)
+		{
+			myVs = res[k];
+			kMatrixAlgebra::banmul(myAe, mm, mm, myVs, res[k]);
 		}
 	}
 

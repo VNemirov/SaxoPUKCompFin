@@ -2,7 +2,7 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LocalDebuggerCommand>C:\Program Files\Microsoft Office\root\Office16\excel.exe</LocalDebuggerCommand>
-    <LocalDebuggerCommandArguments>"$(TargetPath)"</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>/X "$(TargetPath)"</LocalDebuggerCommandArguments>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
 </Project>

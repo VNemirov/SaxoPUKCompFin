@@ -352,6 +352,93 @@ xFd1d(
 	return out;
 }
 
+
+extern "C" __declspec(dllexport)
+LPXLOPER12
+xFdDupire(
+	LPXLOPER12 t_in,
+	LPXLOPER12 x_in,
+	LPXLOPER12 r_in,
+	LPXLOPER12 mu_in,
+	LPXLOPER12 sigma_in,
+	LPXLOPER12 v0_in,
+	LPXLOPER12 tech_in)
+{
+	FreeAllTempMemory();
+
+	//	help
+	string err;
+
+	//	get t 
+	double t;
+	if (!kXlUtils::getDbl(t_in, 0, 0, t, &err)) return kXlUtils::setError(err);
+
+	//	get tech
+	kVector<double> tech;
+	if (!kXlUtils::getVector(tech_in, tech))
+		return kXlUtils::setError("input 1 is not a vector");
+
+	//	standard data
+	int    numt = tech.size() > 0 ? (int)std::lround(tech(0)) : 1;
+	double theta = tech.size() > 1 ? tech(1) : 0.5;
+	int    fb = tech.size() > 2 ? (int)std::lround(tech(2)) : -1;
+	int    log = tech.size() > 3 ? (int)std::lround(tech(3)) : 0;
+	int    wind = tech.size() > 4 ? (int)std::lround(tech(4)) : 0;
+
+	//	fd grid
+	kFd1d<double> fd;
+	if (!kXlUtils::getVector(x_in, fd.x()))
+		return kXlUtils::setError("input 1 is not a vector");
+
+	int n = fd.x().size();
+
+	//	init fd
+	fd.init(1, fd.x(), log > 0);
+
+	if (!kXlUtils::getVector(r_in, fd.r()))
+		return kXlUtils::setError("r is not a vector");
+
+	if (n != fd.r().size())
+		return kXlUtils::setError("r must have same size as x");
+
+	if (!kXlUtils::getVector(mu_in, fd.mu()))
+		return kXlUtils::setError("mu is not a vector");
+
+	if (n != fd.mu().size())
+		return kXlUtils::setError("mu must have same size as x");
+
+	if (!kXlUtils::getVector(sigma_in, fd.var()))
+		return kXlUtils::setError("sigma is not a vector");
+
+	if (n != fd.var().size())
+		return kXlUtils::setError("sigma must have same size as x");
+
+	auto& fd_var = fd.var();
+	for (int i = 0; i < fd_var.size(); ++i)
+		fd_var(i) *= fd_var(i);
+
+	fd.res().resize(1);
+	if (!kXlUtils::getVector(v0_in, fd.res()[0]))
+		return kXlUtils::setError("input 2 is not a vector");
+
+	if (n != fd.res()[0].size())
+		return kXlUtils::setError("v0 must have same size as x");
+
+	if (theta < 0.0) theta = 0.0;
+	if (theta > 1.0) theta = 1.0;
+
+	double dt = t / numt;
+	for (int n = 0; n < numt; ++n)
+	{
+		fd.rollFwdDupire(dt, true, theta, wind, fd.res());
+	}
+
+	LPXLOPER12 out = TempXLOPER12();
+	kXlUtils::setVector(fd.res()[0], out);
+	return out;
+}
+
+
 extern "C" __declspec(dllexport)
 LPXLOPER12 
 xBachelierFd(
@@ -464,15 +551,17 @@ xBlackFd(
 	double strike = 0.0;
 	int    dig = 0;
 	int    pc = 1;
-	int	   ea = 0;
+	int	   ead = 0;
 	int	   smooth = 0;
+	double barrier = 0.0;
 	numRows = (int)getRows(contract);
 	if (numRows > 0 && !kXlUtils::getDbl(contract, 0, 0, expiry, &err))	return kXlUtils::setError(err);
 	if (numRows > 1 && !kXlUtils::getDbl(contract, 1, 0, strike, &err))	return kXlUtils::setError(err);
 	if (numRows > 2 && !kXlUtils::getInt(contract, 2, 0, dig, &err))		return kXlUtils::setError(err);
 	if (numRows > 3 && !kXlUtils::getInt(contract, 3, 0, pc, &err))		return kXlUtils::setError(err);
-	if (numRows > 4 && !kXlUtils::getInt(contract, 4, 0, ea, &err))		return kXlUtils::setError(err);
+	if (numRows > 4 && !kXlUtils::getInt(contract, 4, 0, ead, &err))		return kXlUtils::setError(err);
 	if (numRows > 5 && !kXlUtils::getInt(contract, 5, 0, smooth, &err))	return kXlUtils::setError(err);
+	if (numRows > 6 && !kXlUtils::getDbl(contract, 6, 0, barrier, &err))	return kXlUtils::setError(err);
 
 	//	get grid tech
 	double theta = 0.5;
@@ -495,17 +584,16 @@ xBlackFd(
 
 	//	run
 	double res0;
-	kVector<double> s, res;
-	kMatrix<double> eecm;
+	kVector<double> s, res, eecv;
 
 	//	fitting matrix to data
-	eecm.resize(numX + 2, numT);
+	eecv.resize(numT);
 
-	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ea, smooth, theta, wind, numStd, numT, numX, update > 0, numPr, eec, res0, s, res, eecm, err)) return kXlUtils::setError(err);
+	if (!kBlack::fdRunner(s0, r, mu, sigma, expiry, strike, dig > 0, pc, ead, smooth, barrier, theta, wind, numStd, numT, numX, update > 0, numPr, eec, res0, s, res, eecv, err)) return kXlUtils::setError(err);
 	//	size output
-	if (ea == 1 && eec == 1) {
-		numRows = eecm.rows();
-		numCols = eecm.cols();
+	if (ead == 1 && eec == 1) {
+		numRows = 3 + eecv.size();
+		numCols = 2;
 	}
 	else {
 		numRows = 3 + s.size();
@@ -515,10 +603,15 @@ xBlackFd(
 	LPXLOPER12 out = kXlUtils::getOper(numRows, numCols);
 
 	//	fill output
-	if (ea == 1 && eec == 1) {
-		for (k = 0; k < numCols; k++) {
-			for (i=0; i < numRows; i++)
-			kXlUtils::setDbl(i, k, eecm(i, k), out);
+	if (ead == 1 && eec == 1) {
+		double dt = max(0.0, expiry) / max(1, numT);
+		//kXlUtils::setStr(0, 0, "res 0", out);
+		kXlUtils::setDbl(0, 1, res0, out);
+		kXlUtils::setStr(2, 0, "t", out);
+		kXlUtils::setStr(2, 1, "ee", out);
+		for (i = 0; i < numT; i++) {
+			kXlUtils::setDbl(i, 0, expiry-i*dt, out);
+			kXlUtils::setDbl(i, 1, eecv(i), out);
 		}
 	}
 	else {
@@ -581,7 +674,6 @@ xBlackFd(
 		double numStd = 5.0;
 		int    numT = 25;
 		int    numS = 50;
-		int	   numK = 10;
 		int    update = 1;
 		int    numPr = 1;
 		int	   pSetting = 0;
@@ -591,23 +683,22 @@ xBlackFd(
 		if (numRows > 2 && !kXlUtils::getDbl(gridTech, 2, 0, numStd, &err)) return kXlUtils::setError(err);
 		if (numRows > 3 && !kXlUtils::getInt(gridTech, 3, 0, numT, &err))	return kXlUtils::setError(err);
 		if (numRows > 4 && !kXlUtils::getInt(gridTech, 4, 0, numS, &err))	return kXlUtils::setError(err);
-		if (numRows > 5 && !kXlUtils::getInt(gridTech, 5, 0, numK, &err))	return kXlUtils::setError(err);
-		if (numRows > 6 && !kXlUtils::getInt(gridTech, 6, 0, update, &err)) return kXlUtils::setError(err);
-		if (numRows > 7 && !kXlUtils::getInt(gridTech, 7, 0, numPr, &err))	return kXlUtils::setError(err);
-		if (numRows > 8 && !kXlUtils::getInt(gridTech, 8, 0, pSetting, &err))	return kXlUtils::setError(err);
+		if (numRows > 5 && !kXlUtils::getInt(gridTech, 5, 0, update, &err)) return kXlUtils::setError(err);
+		if (numRows > 6 && !kXlUtils::getInt(gridTech, 6, 0, numPr, &err))	return kXlUtils::setError(err);
+		if (numRows > 7 && !kXlUtils::getInt(gridTech, 7, 0, pSetting, &err))	return kXlUtils::setError(err);
 
 		//	run
 		double res0;
-		kVector<double> s, k;
+		kVector<double> s;
 		kMatrix<double> pMatrix, res;
 
-		if (!kBlack::fdFwdRunner(s0, r, mu, sigma, expiry, strike, dig, pc, smooth, theta, wind, numStd, numT, numS, numK, update > 0, numPr, pSetting, res0, s, k, pMatrix, res, err)) return kXlUtils::setError(err);
+		if (!kBlack::fdFwdRunner(s0, r, mu, sigma, expiry, strike, dig, pc, smooth, theta, wind, numStd, numT, numS, update > 0, numPr, pSetting, res0, s, pMatrix, res, err)) return kXlUtils::setError(err);
 		
 		LPXLOPER12 out;
 
 		if (pSetting == 0) {
 			//	size output
-			numRows = 3 + numK;
+			numRows = 3 + s.size();
 			numCols = numT + 1;
 
 			out = kXlUtils::getOper(numRows, numCols);
@@ -621,9 +712,9 @@ xBlackFd(
 
 			double dt = max(0.0, expiry) / max(1, numT);
 
-			for (i = 0; i < numK; i++)
+			for (i = 0; i < s.size(); i++)
 			{
-				kXlUtils::setDbl(i + 3, 0, k(i), out);
+				kXlUtils::setDbl(i + 3, 0, s(i), out);
 				for (int j = 0; j < numT; j++) {
 					if (int(j * dt) == j * dt) {
 						kXlUtils::setDbl(2, j + 1, j * dt, out);
@@ -770,6 +861,18 @@ extern "C" __declspec(dllexport) int xlAutoOpen(void)
 		(LPXLOPER12)TempStr12(L"xFd1d"),
 		(LPXLOPER12)TempStr12(L"QQQQQQQQ"),
 		(LPXLOPER12)TempStr12(L"xFd1d"),
+		(LPXLOPER12)TempStr12(L"t, x, r, mu, sigma, v0, tech"),
+		(LPXLOPER12)TempStr12(L"1"),
+		(LPXLOPER12)TempStr12(L"myOwnCppFunctions"),
+		(LPXLOPER12)TempStr12(L""),
+		(LPXLOPER12)TempStr12(L""),
+		(LPXLOPER12)TempStr12(L"Solve 1d fd."),
+		(LPXLOPER12)TempStr12(L""));
+
+	Excel12f(xlfRegister, 0, 11, (LPXLOPER12)&xDLL,
+		(LPXLOPER12)TempStr12(L"xFdDupire"),
+		(LPXLOPER12)TempStr12(L"QQQQQQQQ"),
+		(LPXLOPER12)TempStr12(L"xFdDupire"),
 		(LPXLOPER12)TempStr12(L"t, x, r, mu, sigma, v0, tech"),
 		(LPXLOPER12)TempStr12(L"1"),
 		(LPXLOPER12)TempStr12(L"myOwnCppFunctions"),

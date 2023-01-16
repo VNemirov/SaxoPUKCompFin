@@ -1,0 +1,7 @@
+﻿  kBachelier.cpp
+  kBlack.cpp
+C:\Users\Shark\Source\Repos\VNemirov\SaxoPUKCompFin\Utility\kBlack.cpp(235,12): warning C4101: 'j': unreferenced local variable
+  kMatrixAlgebra.cpp
+  kSolver.cpp
+  Generating Code...
+  Utility.vcxproj -> C:\Users\Shark\source\repos\VNemirov\SaxoPUKCompFin\Debug\Utility.lib

@@ -1,1 +1,9 @@
-﻿  CompFin_64.vcxproj -> C:\Users\victo\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll
+﻿  framework.c
+  MemoryManager.cpp
+  MemoryPool.cpp
+  XLCALL.CPP
+  xlExport.cpp
+C:\Users\victo\source\repos\SaxoPUKCompFin\CompFin_64\xlExport.cpp(647,10): warning C4101: 'c': unreferenced local variable
+  Generating Code...
+     Creating library C:\Users\victo\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.lib and object C:\Users\victo\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.exp
+  CompFin_64.vcxproj -> C:\Users\victo\source\repos\SaxoPUKCompFin\x64\Debug\CompFin_64.xll

@@ -88,12 +88,15 @@ kBlack::fdRunner(
 	const double		r,
 	const double		mu,
 	const double		sigma,
+
 	const double		expiry,
 	const double		strike,
 	const bool			dig,
 	const int			pc,			//	put (-1) call (1)
-	const int			ea,			//	european (0), american (1)
+	const int			ead,		//	european (0), american (1)
 	const int			smooth,		//	smoothing
+	const double		barrier,	//	barrier
+
 	const double		theta,
 	const int			wind,
 	const double		numStd,
@@ -105,11 +108,11 @@ kBlack::fdRunner(
 	double& res0,
 	kVector<double>& s,
 	kVector<double>& res,
-	kMatrix<double>& eecm,
+	kVector<double>& eecv,
 	string& error)
 {
 	//	helps
-	int h, i, p;
+	int h, i, p, bi;
 
 	//	construct s axis
 	double t = max(0.0, expiry);
@@ -120,12 +123,38 @@ kBlack::fdRunner(
 
 	//	early exercise curve matrix
 	
-	eecm.resize(nums, numT);
+	eecv.resize(numT);
 
 	s.resize(nums);
 	for (i = 0; i < nums; ++i)
 	{
 		s(i) = s0 * exp((i - nums / 2.0) * dx);
+	}
+
+	//	adder barrier to grid if option is down-and-out
+	if (ead == 3)
+	{
+		for (i = 0; i < nums; i++) {
+			if (s(i) > barrier && i > 0) {
+				// determening wether s(i) or s(i-1) is closer to barrier
+				if (abs(s(i) - barrier) < abs(s(i - 1) - barrier)) {
+					bi = i;
+					s(bi) = barrier;
+					break;
+				}
+				else
+				{
+					bi = i-1;
+					s(bi) = barrier;
+					break;
+				}
+			}
+			else if (s(i) > barrier && i == 0) {
+				bi = i;
+				s(bi) = barrier;
+				break;
+			}
+		}
 	}
 
 	//	construct fd grid
@@ -173,24 +202,38 @@ kBlack::fdRunner(
 			fd.var()(i) = sigma * sigma * s(i) * s(i);
 		}
 
+		if (ead == 3) { //improved barrier
+			fd.mu()(bi) = 0.0;
+			fd.var()(bi) = 0.0;
+		}
+		
 		//	roll
 		fd.res()(0) = res;
-		for (h = numt - 1; h >= 0; --h)
+		for (h = numt-1; h >= 0; h--)
 		{
 			fd.rollBwd(dt, update || h == (numt - 1), theta, wind, fd.res());
-			if (ea > 0)
+			if (ead == 1)
 			{
-				for (i = 0; i < nums; ++i) {
-					fd.res()(0)(i) = max(res(i), fd.res()(0)(i));
-					//	for i=0 fd.res()(0)(i) is greater than res(i), why?
-					if (eec == 1) eecm(nums - 1 - i, h) = (fd.res()(0)(i) > res(i) ? 0 : 1);	
+				for (i = nums-1; i >= 0; i--) {
+					if (res(i)> abs(fd.res()(0)(i)))
+					{
+						if (eec == 1) eecv(h) = s(i);
+						fd.res()(0)(i) = res(i);
+					}
+					//fd.res()(0)(i) = max(res(i), fd.res()(0)(i));
+				}
+			}
+			else if (ead >= 2) 
+			{
+				for (i = 0; i < nums; i++) {
+					if (s(i) <= barrier) fd.res()(0)(i) = 0.0;
 				}
 			}
 		}
 	}
 
 	//	set result
-	if (eec == 0 || ea == 0) {
+	if (eec == 0 || ead != 1) {
 		res = fd.res()(0);
 		res0 = fd.res()(0)(nums / 2);
 	}
@@ -220,13 +263,12 @@ kBlack::fdFwdRunner(
 	const double		numStd,
 	const int			numT,
 	const int			numS,
-	const int			numK,
 	const bool			update,
 	const int			numPr,
 	const int			pSetting,
+
 	double& res0,
 	kVector<double>& s,
-	kVector<double>& k,
 	kMatrix<double>& pMatrix,
 	kMatrix<double>& res,
 	string& error)
@@ -292,32 +334,18 @@ kBlack::fdFwdRunner(
 	}
 
 	//	set result
-	k.resize(numK);
-
-	double dk = strike / numK;
-
-	k(0) = strike / 2;
-
-	res.resize(numK, numT);
-
-
-	for (i = 1; i < numK; i++) {
-		k(i) = k(i-1) + dk;
-	}
-
+	res.resize(nums, numT);
 
 	for (int t = 0; t < numt; t++) {
-		for (i = 0; i < numK; i++) {
+		for (i = 0; i < nums; i++) {
 			res(i,t) = 0.0;
 			for (int c = 0; c < nums; c++) {
-				res(i,t) += pMatrix(c,t) * max(s(c) - k(i), 0.0);
+				res(i,t) += pMatrix(c,t) * max(s(c) - s(i), 0.0);
 			}
 		}
 	}
 
-	res0 = res(numK/2, numt-1);
-
-
+	res0 = res(nums/2, numt-1);
 
 	//	done
 	return true;

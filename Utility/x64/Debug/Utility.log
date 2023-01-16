@@ -1,3 +1,7 @@
-﻿  kBlack.cpp
-C:\Users\victo\source\repos\SaxoPUKCompFin\Utility\kBlack.cpp(235,12): warning C4101: 'j': unreferenced local variable
+﻿  kBachelier.cpp
+  kBlack.cpp
+C:\Users\victo\source\repos\SaxoPUKCompFin\Utility\kBlack.cpp(277,12): warning C4101: 'j': unreferenced local variable
+  kMatrixAlgebra.cpp
+  kSolver.cpp
+  Generating Code...
   Utility.vcxproj -> C:\Users\victo\source\repos\SaxoPUKCompFin\x64\Debug\Utility.lib
